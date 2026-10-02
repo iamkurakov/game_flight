@@ -1,0 +1,129 @@
+/* LA Flight Simulator — интерфейс.
+   Идея: приборная панель авионики. Тёплый «бумажный» белый для текста, один акцент — янтарь (#ffb02e),
+   бирюзовый — только для указателя на контрольную точку. Цифры — узкий гротеск с tabular-nums. */
+:root {
+  --ink: #f3efe7;
+  --dim: rgba(243, 239, 231, 0.64);
+  --accent: #ffb02e;
+  --nav: #4be3ff;
+  --bad: #ff5a47;
+  --good: #4be39a;
+  --panel: rgba(9, 13, 19, 0.46);
+  --line: rgba(243, 239, 231, 0.16);
+  --font: "Bahnschrift", "DIN Alternate", "Oswald", "Roboto Condensed", "Arial Narrow", "Segoe UI", system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: #0a1018; color: var(--ink); font-family: var(--font); -webkit-font-smoothing: antialiased; }
+#gl { position: fixed; inset: 0; width: 100%; height: 100%; display: block; outline: none; }
+button { font-family: inherit; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+small { font-size: 0.55em; color: var(--dim); font-weight: 500; margin-left: 0.3em; }
+b { font-weight: 600; }
+
+/* ---------- HUD ---------- */
+#hud { position: fixed; inset: 0; pointer-events: none; user-select: none; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55); }
+#hTop { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: min(520px, 92vw); text-align: center; }
+#hCompass { height: 40px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; position: relative; backdrop-filter: blur(4px); }
+#hCompass canvas { width: 100%; height: 100%; display: block; }
+#hHdgBox { margin-top: 4px; font-size: 22px; font-weight: 600; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
+#hStatus { margin-top: 2px; font-size: 15px; letter-spacing: 0.16em; color: var(--ink); font-weight: 600; }
+#hStatus[data-s="stall"], #hStatus[data-s="crashed"] { color: var(--bad); }
+#hStatus[data-s="landed"] { color: var(--good); }
+#hStatus[data-s="takeoff"] { color: var(--accent); }
+#hWarn { margin-top: 8px; font-size: 22px; font-weight: 700; letter-spacing: 0.05em; color: var(--bad); animation: blink 0.7s steps(2, jump-none) infinite; }
+@keyframes blink { 50% { opacity: 0.25; } }
+
+#toasts { position: absolute; top: 24%; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; width: min(560px, 92vw); }
+.toast { padding: 9px 18px; background: rgba(9, 13, 19, 0.62); border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 6px; font-size: 19px; font-weight: 600; letter-spacing: 0.02em; animation: toastIn 0.28s ease-out; transition: opacity 0.5s, transform 0.5s; }
+.toast.good { border-left-color: var(--good); }
+.toast.warn { border-left-color: var(--bad); }
+.toast.out { opacity: 0; transform: translateY(-6px); }
+@keyframes toastIn { from { opacity: 0; transform: translateY(8px); } }
+
+#hMission { position: absolute; top: 12px; left: 12px; width: 236px; padding: 10px 14px 12px; }
+.m-title { font-size: 12px; color: var(--dim); letter-spacing: 0.08em; }
+.m-step { margin: 3px 0 7px; font-size: 20px; font-weight: 600; line-height: 1.15; color: var(--accent); min-height: 46px; }
+.m-grid { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; font-size: 14px; color: var(--dim); }
+.m-grid b { color: var(--ink); font-variant-numeric: tabular-nums; font-size: 16px; text-align: right; }
+.m-prog { margin-top: 8px; font-size: 15px; letter-spacing: 0.3em; color: var(--accent); }
+
+#hBottom { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); display: flex; align-items: flex-end; gap: 20px; }
+.gauge { min-width: 150px; padding: 8px 14px 9px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; backdrop-filter: blur(5px); }
+#gSpd { text-align: right; }
+.g-label { font-size: 12px; color: var(--dim); letter-spacing: 0.06em; }
+.g-val { font-size: 40px; line-height: 1.05; font-weight: 600; font-variant-numeric: tabular-nums; }
+.g-sub { margin-top: 2px; font-size: 13px; color: var(--dim); }
+.g-sub b { color: var(--ink); font-variant-numeric: tabular-nums; }
+#hHorizonBox { width: 132px; height: 132px; border-radius: 50%; background: rgba(9, 13, 19, 0.3); }
+#hHorizon { width: 132px; height: 132px; display: block; }
+
+#hThr { position: absolute; bottom: 14px; left: 14px; width: 64px; text-align: center; font-size: 15px; }
+#hThrTrack { height: 120px; width: 16px; margin: 0 auto 6px; border: 1px solid var(--line); border-radius: 3px; background: var(--panel); position: relative; overflow: hidden; }
+#hThrBar { position: absolute; inset: 0; background: var(--accent); transform-origin: bottom; transform: scaleY(0.1); }
+
+#hSide { position: absolute; bottom: 14px; right: 14px; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; font-size: 13px; letter-spacing: 0.1em; color: var(--dim); }
+#hHints { position: absolute; bottom: 160px; right: 14px; font-size: 12px; color: var(--dim); opacity: 0.85; }
+#debugPanel { position: absolute; top: 12px; right: 12px; margin: 0; padding: 10px 12px; font: 12px/1.45 ui-monospace, Menlo, Consolas, monospace; background: rgba(0, 0, 0, 0.6); border: 1px solid var(--line); border-radius: 6px; max-width: 46vw; white-space: pre; }
+
+/* ---------- экраны ---------- */
+.screen { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; padding: 18px; z-index: 10; }
+.screen.show { display: flex; }
+#screen-loading { background: #0a1018; z-index: 30; }
+.load-card { width: min(420px, 88vw); }
+.load-title { font-size: 26px; font-weight: 600; margin-bottom: 18px; }
+.load-bar { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; }
+#loadFill { height: 100%; width: 0; background: var(--accent); transition: width 0.25s; }
+.load-text { margin-top: 12px; color: var(--dim); font-size: 15px; }
+
+#screen-start { background: linear-gradient(90deg, rgba(7, 11, 17, 0.92) 0%, rgba(7, 11, 17, 0.62) 46%, rgba(7, 11, 17, 0.08) 82%); justify-content: flex-start; }
+.start-wrap { width: min(1180px, 100%); margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(300px, 0.85fr); gap: 40px; align-items: center; }
+h1 { margin: 0 0 14px; font-size: clamp(44px, 7.4vw, 104px); line-height: 0.95; font-weight: 700; letter-spacing: -0.015em; text-shadow: 0 2px 22px rgba(0, 0, 0, 0.5); }
+.lead { margin: 0 0 26px; max-width: 54ch; font-size: clamp(16px, 1.5vw, 20px); line-height: 1.45; color: rgba(243, 239, 231, 0.88); }
+.lead.small { font-size: 16px; margin-bottom: 14px; }
+.fine { margin: 14px 0 0; font-size: 13px; color: var(--dim); max-width: 60ch; }
+.btn { appearance: none; cursor: pointer; padding: 11px 22px; font-size: 17px; font-weight: 600; letter-spacing: 0.02em; color: var(--ink); background: transparent; border: 1px solid rgba(243, 239, 231, 0.4); border-radius: 6px; transition: background 0.15s, color 0.15s, border-color 0.15s; }
+.btn:hover { border-color: var(--ink); background: rgba(243, 239, 231, 0.1); }
+.btn.primary { color: var(--accent); border-color: var(--accent); }
+.btn.primary:hover { background: var(--accent); color: #1a1205; }
+.btn.big { padding: 15px 38px; font-size: 22px; }
+.btn.small { padding: 5px 14px; font-size: 14px; min-width: 104px; }
+.btn:focus-visible, .lang-btn:focus-visible { outline: 2px solid var(--nav); outline-offset: 3px; }
+.lang-btn { position: absolute; top: 16px; right: 16px; padding: 7px 12px; font-size: 13px; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; cursor: pointer; }
+.start-right { padding: 18px 20px 14px; }
+.ctl-title { font-size: 14px; color: var(--dim); letter-spacing: 0.08em; margin: 12px 0 8px; }
+.start-right .ctl-title { margin-top: 0; }
+.ctl-list { display: grid; grid-template-columns: auto 1fr; gap: 7px 14px; align-items: center; font-size: 15px; }
+.ctl-list.compact { font-size: 13.5px; gap: 5px 12px; }
+.keys { display: flex; gap: 4px; flex-wrap: wrap; }
+kbd { font-family: inherit; font-size: 0.9em; font-weight: 600; padding: 2px 8px; border: 1px solid rgba(243, 239, 231, 0.42); border-bottom-width: 2px; border-radius: 5px; min-width: 26px; text-align: center; }
+.dialog { width: min(540px, 100%); padding: 22px 24px 20px; max-height: 94vh; overflow: auto; background: rgba(9, 13, 19, 0.78); }
+.dialog h2 { margin: 0 0 14px; font-size: 40px; font-weight: 700; line-height: 1; }
+#resultBox[data-kind="crashed"] h2 { color: var(--bad); }
+#resultBox[data-kind="landed"] h2, #resultBox[data-kind="complete"] h2 { color: var(--good); }
+.btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin: 16px 0 6px; }
+dl { margin: 0; display: grid; grid-template-columns: 1fr auto; gap: 6px 18px; font-size: 17px; }
+dt { color: var(--dim); }
+dd { margin: 0; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+.set-list { display: grid; gap: 6px; }
+.set-row { display: flex; align-items: center; justify-content: space-between; font-size: 16px; }
+#screen-pause { background: rgba(6, 9, 14, 0.5); }
+#screen-result { background: rgba(6, 9, 14, 0.38); }
+#screen-error { background: #0a1018; z-index: 40; }
+
+#mobile-notice { display: none; position: fixed; left: 8px; right: 8px; bottom: 8px; z-index: 35; padding: 10px 14px; font-size: 14px; background: rgba(9, 13, 19, 0.9); border: 1px solid var(--accent); border-radius: 8px; }
+.touch #mobile-notice { display: block; }
+
+@media (max-width: 900px) {
+  .start-wrap { grid-template-columns: 1fr; gap: 18px; }
+  #screen-start { align-items: flex-start; overflow-y: auto; background: rgba(7, 11, 17, 0.8); }
+  .start-right { display: none; }
+  #hMission { width: 190px; padding: 8px 10px; }
+  .m-step { font-size: 16px; min-height: 38px; }
+  .g-val { font-size: 30px; }
+  .gauge { min-width: 112px; padding: 6px 10px; }
+  #hHorizonBox, #hHorizon { width: 100px; height: 100px; }
+  #hHints, #hSide { display: none; }
+  #hHdgBox { font-size: 18px; }
+}
+@media (max-height: 620px) { #hMission .m-title, #hThr { display: none; } #hBottom { transform: translateX(-50%) scale(0.85); transform-origin: bottom center; } }
+@media (prefers-reduced-motion: reduce) { #hWarn { animation: none; } .toast { animation: none; transition: none; } }

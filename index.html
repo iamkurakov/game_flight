@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>LA Flight Simulator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<canvas id="gl" tabindex="-1"></canvas>
+
+<!-- ============ HUD ============ -->
+<div id="hud" style="display:none">
+  <div id="hTop">
+    <div id="hCompass"><canvas id="hTape" width="520" height="40"></canvas></div>
+    <div id="hHdgBox"><span id="hHdg">000°</span></div>
+    <div id="hStatus" data-s="ground">ON GROUND</div>
+    <div id="hWarn" style="visibility:hidden"></div>
+  </div>
+  <div id="toasts" aria-live="polite"></div>
+
+  <section id="hMission" class="panel" aria-label="Mission">
+    <div class="m-title" data-i18n="m_title"></div>
+    <div class="m-step" id="mStep">—</div>
+    <div class="m-grid">
+      <span data-i18n="m_dist"></span><b id="mDist">—</b>
+      <span data-i18n="m_time"></span><b id="mTime">00:00</b>
+    </div>
+    <div class="m-prog" id="mProg">○○○○○○</div>
+  </section>
+
+  <div id="hBottom">
+    <div class="gauge" id="gSpd"><div class="g-label" data-i18n="h_speed"></div><div class="g-val"><span id="hSpd">0</span><small id="hSpdU">kt</small></div></div>
+    <div id="hHorizonBox"><canvas id="hHorizon" width="132" height="132"></canvas></div>
+    <div class="gauge" id="gAlt"><div class="g-label" data-i18n="h_alt"></div><div class="g-val"><span id="hAlt">0</span><small id="hAltU">ft</small></div>
+      <div class="g-sub"><span data-i18n="h_vs"></span> <b id="hVs">0</b> <small id="hVsU">ft/min</small></div></div>
+  </div>
+  <div id="hThr"><div id="hThrTrack"><div id="hThrBar"></div></div><div class="g-label" data-i18n="h_thr"></div><b id="hThrTxt">10%</b></div>
+  <div id="hSide"><span id="hCam">Chase</span><span id="hAssist">ASSIST ON</span><span id="hBrake">BRAKE</span></div>
+  <div id="hHints" data-i18n="hint_keys"></div>
+  <pre id="debugPanel" style="display:none"></pre>
+</div>
+
+<!-- ============ ЗАГРУЗКА ============ -->
+<div id="screen-loading" class="screen show">
+  <div class="load-card">
+    <div class="load-title" data-i18n="loadingTitle"></div>
+    <div class="load-bar"><div id="loadFill"></div></div>
+    <div class="load-text" id="loadText">…</div>
+  </div>
+</div>
+
+<!-- ============ СТАРТ ============ -->
+<div id="screen-start" class="screen">
+  <div class="start-wrap">
+    <div class="start-left">
+      <h1 data-i18n="title">LA Flight Simulator</h1>
+      <p class="lead" data-i18n="subtitle"></p>
+      <button id="btnStart" class="btn primary big" type="button" data-i18n="start">Start Flight</button>
+      <p class="fine" data-i18n="note"></p>
+    </div>
+    <div class="start-right panel">
+      <div class="ctl-title" data-i18n="controls"></div>
+      <div class="ctl-list" id="ctlList1"></div>
+      <p class="fine" data-i18n="c_arrows"></p>
+    </div>
+  </div>
+  <button class="lang-btn" id="btnLang0" type="button" aria-label="Language">EN / RU</button>
+</div>
+
+<!-- ============ ПАУЗА ============ -->
+<div id="screen-pause" class="screen">
+  <div class="dialog panel">
+    <h2 data-i18n="p_title"></h2>
+    <div class="btn-row">
+      <button id="btnResume" class="btn primary" type="button" data-i18n="p_resume"></button>
+      <button id="btnRestartP" class="btn" type="button" data-i18n="p_restart"></button>
+    </div>
+    <div class="ctl-title" data-i18n="p_settings"></div>
+    <div class="set-list">
+      <div class="set-row"><span data-i18n="set_sound"></span><button id="setSound" class="btn small" type="button"></button></div>
+      <div class="set-row"><span data-i18n="set_assist"></span><button id="setAssist" class="btn small" type="button"></button></div>
+      <div class="set-row"><span data-i18n="set_units"></span><button id="setUnits" class="btn small" type="button"></button></div>
+      <div class="set-row"><span data-i18n="set_shadows"></span><button id="setShadows" class="btn small" type="button"></button></div>
+      <div class="set-row"><span data-i18n="set_invert"></span><button id="setInvert" class="btn small" type="button"></button></div>
+      <div class="set-row"><span data-i18n="set_lang"></span><button id="setLang" class="btn small" type="button"></button></div>
+    </div>
+    <div class="ctl-title" data-i18n="controls"></div>
+    <div class="ctl-list compact" id="ctlList2"></div>
+  </div>
+</div>
+
+<!-- ============ РЕЗУЛЬТАТ ============ -->
+<div id="screen-result" class="screen">
+  <div class="dialog panel" id="resultBox" data-kind="landed">
+    <h2 id="rTitle"></h2>
+    <p id="rNote" class="lead small"></p>
+    <dl id="rList"></dl>
+    <div class="btn-row">
+      <button id="rBtn1" class="btn primary" type="button"></button>
+      <button id="rBtn2" class="btn" type="button"></button>
+    </div>
+    <p class="fine" id="rHint"></p>
+  </div>
+</div>
+
+<!-- ============ ОШИБКА ============ -->
+<div id="screen-error" class="screen">
+  <div class="dialog panel">
+    <h2 id="errTitle"></h2>
+    <p class="lead small" id="errText"></p>
+  </div>
+</div>
+
+<div id="mobile-notice" data-i18n="mobile"></div>
+
+<script src="libs/three.min.js"></script>
+<script src="src/Utils.js"></script>
+<script src="src/I18N.js"></script>
+<script src="src/LosAngeles.js"></script>
+<script src="src/CollisionSystem.js"></script>
+<script src="src/FlightPhysics.js"></script>
+<script src="src/GeoBuilder.js"></script>
+<script src="src/Aircraft.js"></script>
+<script src="src/World.js"></script>
+<script src="src/Landmarks.js"></script>
+<script src="src/MissionSystem.js"></script>
+<script src="src/Effects.js"></script>
+<script src="src/AudioManager.js"></script>
+<script src="src/Input.js"></script>
+<script src="src/CameraController.js"></script>
+<script src="src/HUD.js"></script>
+<script src="src/FlightSimulator.js"></script>
+<script src="src/main.js"></script>
+</body>
+</html>
