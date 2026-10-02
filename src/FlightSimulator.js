@@ -74,6 +74,10 @@ globalThis.LA = globalThis.LA || {};
         mute: () => this.toggleSetting('sound'), assist: () => this.toggleSetting('assist'), units: () => this.toggleSetting('units'),
         shadows: () => this.toggleSetting('shadows'), lang: () => this.toggleSetting('lang'), invert: () => this.toggleSetting('invert'),
       }, () => this.state === 'FLYING' || this.state === 'PAUSED' || this.state === 'CRASHED' || this.state === 'LANDED');
+      this.touch = new LA.TouchControls({
+        throttle: (v) => { this.throttle = v; }, camera: () => this.cycleCamera(), pause: () => this.togglePause(),
+      });
+      this.input.touch = this.touch;
 
       this._bindUI();
       this._applySettings(true);
@@ -82,7 +86,6 @@ globalThis.LA = globalThis.LA || {};
       window.addEventListener('blur', () => { if (!document.hasFocus() && this.state === 'FLYING') this.pause(); });
       // защита от случайного закрытия вкладки (Ctrl+W при управлении газом клавишей Ctrl)
       window.addEventListener('beforeunload', (e) => { if (this.state === 'FLYING' || this.state === 'PAUSED') { e.preventDefault(); e.returnValue = ''; } });
-      if ('ontouchstart' in window || navigator.maxTouchPoints > 0) document.documentElement.classList.add('touch');
 
       this.phys.reset();
       this.camCtl.override = 'menu';
@@ -151,7 +154,13 @@ globalThis.LA = globalThis.LA || {};
 
     _bindUI() {
       const click = (id, fn) => $(id).addEventListener('click', (e) => { fn(); e.currentTarget.blur(); });
-      click('btnStart', () => this.startFlight());
+      click('btnStart', () => {
+        if (!this.touch.enabled) { this.startFlight(); return; }
+        // на мобильных: полный экран, разрешение на датчик наклона (iOS), затем старт
+        this.audio.init();
+        this.touch.enterFullscreen();
+        this.touch.requestPermission().then(() => { this.startFlight(); this.touch.calibrate(); });
+      });
       click('btnLang0', () => this.toggleSetting('lang'));
       click('btnResume', () => this.resume());
       click('btnRestartP', () => this.restart());
@@ -210,6 +219,8 @@ globalThis.LA = globalThis.LA || {};
       this.camCtl.override = null;
       this.camCtl.reset();
       this.input.reset();
+      this.touch.reset();
+      this.touch.calibrate();
       this.hud.clearToasts();
       this.pending = null; this.stopT = 0; this.liftoffT = null; this.prevGrounded = true; this.acc = 0; this.landedFree = false;
       this.audio.suspend(false);
@@ -218,7 +229,7 @@ globalThis.LA = globalThis.LA || {};
     }
 
     pause() { if (this.state === 'FLYING') { this.setState('PAUSED'); this.audio.suspend(true); this.input.reset(); } }
-    resume() { if (this.state === 'PAUSED') { this.setState('FLYING'); this.audio.suspend(false); this.last = performance.now(); } }
+    resume() { if (this.state === 'PAUSED') { this.touch.calibrate(); this.setState('FLYING'); this.audio.suspend(false); this.last = performance.now(); } }
     togglePause() { if (this.state === 'FLYING') this.pause(); else if (this.state === 'PAUSED') this.resume(); }
     toggleDebug() { if (!this.hud) return; this.hud.setDebug(!this.hud.dbgOn); }
     cycleCamera() {
@@ -369,6 +380,7 @@ globalThis.LA = globalThis.LA || {};
       const p = this.phys;
 
       if (st === 'FLYING') {
+        this.touch.update(this.throttle);
         this.input.update(dt, true);
         this.throttle = U.clamp(this.throttle + this.input.throttleRate * 0.45 * dt, 0, 1);
         const c = this.ctl;

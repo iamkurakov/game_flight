@@ -3,7 +3,11 @@
 <head>
 <meta charset="utf-8">
 <title>LA Flight Simulator</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a1018">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -39,6 +43,17 @@
   <div id="hSide"><span id="hCam">Chase</span><span id="hAssist">ASSIST ON</span><span id="hBrake">BRAKE</span></div>
   <div id="hHints" data-i18n="hint_keys"></div>
   <pre id="debugPanel" style="display:none"></pre>
+
+  <!-- сенсорное управление (только на телефонах/планшетах) -->
+  <div id="touchUI">
+    <div id="tThr"><div id="tThrTrack"><div id="tThrFill"></div></div><div class="g-label" data-i18n="h_thr"></div><b id="tThrTxt">10%</b></div>
+    <div id="tTop">
+      <button id="tCal" class="t-btn" type="button" data-i18n="t_level"></button>
+      <button id="tCam" class="t-btn" type="button" data-i18n="c_cam"></button>
+      <button id="tPause" class="t-btn" type="button" aria-label="Pause">II</button>
+    </div>
+    <button id="tBrake" class="t-btn" type="button" data-i18n="t_brake"></button>
+  </div>
 </div>
 
 <!-- ============ ЗАГРУЗКА ============ -->
@@ -128,6 +143,7 @@
 <script src="src/Effects.js"></script>
 <script src="src/AudioManager.js"></script>
 <script src="src/Input.js"></script>
+<script src="src/TouchControls.js"></script>
 <script src="src/CameraController.js"></script>
 <script src="src/HUD.js"></script>
 <script src="src/FlightSimulator.js"></script>

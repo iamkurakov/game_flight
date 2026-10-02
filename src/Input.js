@@ -19,6 +19,7 @@ globalThis.LA = globalThis.LA || {};
       this.invertPitch = false;
       this.h = handlers;
       this.active = isGameActive;
+      this.touch = null; // LA.TouchControls — аналоговые оси от наклона устройства
       window.addEventListener('keydown', (e) => this._down(e));
       window.addEventListener('keyup', (e) => { this.keys.delete(e.code); if (this.active() && BLOCK.has(e.code)) e.preventDefault(); });
       window.addEventListener('blur', () => this.keys.clear());
@@ -56,7 +57,13 @@ globalThis.LA = globalThis.LA || {};
         r = (this.has('KeyD', 'ArrowRight') ? 1 : 0) - (this.has('KeyA', 'ArrowLeft') ? 1 : 0);
         y = (this.has('KeyE') ? 1 : 0) - (this.has('KeyQ') ? 1 : 0);
         th = (this.has('ShiftLeft', 'ShiftRight', 'KeyX', 'PageUp') ? 1 : 0) - (this.has('ControlLeft', 'ControlRight', 'KeyZ', 'PageDown') ? 1 : 0);
-        this.brake = this.has('Space');
+        const t = this.touch;
+        if (t && t.active) {
+          // клавиатура (если подключена) главнее наклона
+          if (p === 0) p = this.invertPitch ? -t.pitch : t.pitch;
+          if (r === 0) r = t.roll;
+        }
+        this.brake = this.has('Space') || !!(t && t.brake);
       } else this.brake = false;
       const a = this.axes;
       const move = (v, t, up, down) => {

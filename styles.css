@@ -111,7 +111,26 @@ dd { margin: 0; font-weight: 600; text-align: right; font-variant-numeric: tabul
 #screen-error { background: #0a1018; z-index: 40; }
 
 #mobile-notice { display: none; position: fixed; left: 8px; right: 8px; bottom: 8px; z-index: 35; padding: 10px 14px; font-size: 14px; background: rgba(9, 13, 19, 0.9); border: 1px solid var(--accent); border-radius: 8px; }
-.touch #mobile-notice { display: block; }
+.touch #screen-start.show ~ #mobile-notice { display: block; }
+
+/* ---------- сенсорное управление ---------- */
+.touch, .touch body { touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; overscroll-behavior: none; }
+.touch .dialog, .touch #screen-start { touch-action: pan-y; }
+.touch button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+#touchUI { display: none; }
+.touch #touchUI { display: block; }
+.touch #hThr, .touch #hHints { display: none; }
+.touch #hTop { width: clamp(200px, calc(100vw - 540px), 520px); }
+#touchUI > * { pointer-events: auto; }
+#tThr { position: absolute; left: max(12px, env(safe-area-inset-left)); bottom: 12px; width: 64px; text-align: center; font-size: 14px; }
+#tThrTrack { position: relative; width: 52px; height: min(40vh, 200px); margin: 0 auto 4px; border: 1px solid rgba(243, 239, 231, 0.4); border-radius: 10px; background: var(--panel); overflow: hidden; touch-action: none; }
+#tThrFill { position: absolute; inset: 0; background: var(--accent); opacity: 0.85; transform-origin: bottom; transform: scaleY(0.1); }
+#tTop { position: absolute; top: 10px; right: max(10px, env(safe-area-inset-right)); display: flex; gap: 6px; }
+.t-btn { min-width: 46px; height: 42px; padding: 0 10px; font: 600 13px/1 var(--font); letter-spacing: 0.06em; color: var(--ink); background: var(--panel); border: 1px solid rgba(243, 239, 231, 0.4); border-radius: 8px; backdrop-filter: blur(5px); }
+.t-btn:active { background: rgba(243, 239, 231, 0.2); }
+#tBrake { position: absolute; right: max(12px, env(safe-area-inset-right)); bottom: 12px; width: 84px; height: 64px; border-color: var(--bad); color: var(--bad); }
+#tBrake.on { background: var(--bad); color: #1a0705; }
+.touch #hBottom { bottom: 8px; }
 
 @media (max-width: 900px) {
   .start-wrap { grid-template-columns: 1fr; gap: 18px; }
